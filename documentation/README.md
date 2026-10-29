@@ -49,7 +49,3 @@ Ages, buildings, governments, economies and policies are YAML files in `plugins/
 ## Known issues in 0.0.3A
 
 * `buildings.conflict_scope` and `protection.tnt_requires_online` exist in `settings.yml` but are not read by the loader, so their defaults always apply.
-* BlueMap is listed as a soft dependency, but only a dynmap integration ships.
-* The helper scripts in `tools/` target an older file layout.
-
-See the source repository for releases and issues: [github.com/Maddude174/Ages](https://github.com/Maddude174/Ages).
