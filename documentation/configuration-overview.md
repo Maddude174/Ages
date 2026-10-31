@@ -7,7 +7,8 @@ Ages is almost entirely data-driven. Ages, buildings, governments, economies and
 * **Every definition lives in one file.** The `id` must be lowercase and match the file name for buildings.
 * **Files starting with `_` are ignored.** They are references.
 * **A broken definition is skipped, not fatal.** The console prints the file and the reason. Everything else loads, and the console reports how many definitions were skipped.
-* **Unknown materials** are reported at load time (`unknown material` warnings).
+* **Skips cascade.** An age that references a missing building is skipped, and every building that belongs to a skipped age is skipped with it.
+* **Unknown materials in building files** are errors. Unknown **tags or materials in `groups.yml`** are `(ignored)` warnings since 0.0.47, so a group still loads with the entries that do exist.
 * **Buildings load recursively** from `buildings/<category>/`. A new building appears in the catalogue by itself.
 * **Apply changes with `/ages reload`** (needs `ages.admin`) or by restarting.
 
@@ -17,18 +18,19 @@ The plugin refuses to start only for fatal registry errors, for example when it 
 
 ## DefaultsSync: how upgrades treat your files
 
-Shipped defaults are kept in step with your data folder **without overwriting your edits**.
+Shipped defaults carry a content version, currently **15**. The behaviour depends on what is already in your data folder.
 
-| Situation                                                                             | What happens                                                                                                                                                                                                                       |
-| ------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Fresh install                                                                         | Every shipped file is installed.                                                                                                                                                                                                   |
-| New shipped files in a later release                                                  | Added automatically on the next start. They show up in the catalogue with no code change.                                                                                                                                          |
-| A shipped file you deleted on purpose                                                 | Remembered in `defaults.manifest` and **not** restored.                                                                                                                                                                            |
-| Shipped defaults change incompatibly (internal content version bump, currently **5**) | Your old default files are **backed up to `plugins/Ages/backup/`**, then replaced. Obsolete defaults listed in `obsolete-defaults.txt` are removed. An old `town.yml` is migrated to `settings.yml` with your values carried over. |
-| Files you created yourself                                                            | Never touched.                                                                                                                                                                                                                     |
+| Situation                                           | What happens                                                                                                                                                                                                                    |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Fresh install                                       | Every shipped file is installed.                                                                                                                                                                                                |
+| Same defaults version, new shipped files            | Files not yet in `defaults.manifest` are added on the next start. They show up in the catalogue with no code change.                                                                                                            |
+| A shipped file you deleted on purpose               | Remembered in `defaults.manifest` and **not** restored, as long as the defaults version has not changed.                                                                                                                        |
+| **Defaults version bump** (any older version to 15) | Every shipped file, **including `settings.yml`**, is backed up to `backup/defaults-v<old>-<timestamp>/` and **replaced** from the jar. Values are **not merged**. Obsolete files listed in `obsolete-defaults.txt` are removed. |
+| Legacy `town.yml`                                   | Backed up and deleted. It is not migrated into `settings.yml`.                                                                                                                                                                  |
+| Files you created yourself                          | Never touched.                                                                                                                                                                                                                  |
 
-{% hint style="warning" %}
-If you edited a shipped file directly, copy your edit into a differently named file or re-apply it after a content version bump. Look in `backup/` for your previous version.
+{% hint style="danger" %}
+If you edited a shipped file (including `settings.yml`), your edit disappears from the live folder on the first start after a defaults version bump. Re-apply it from the backup, or move your changes into new files with new ids.
 {% endhint %}
 
 ## Cross-file references
@@ -41,8 +43,8 @@ If you edited a shipped file directly, copy your edit into a differently named f
 | building             | `replaces`, `conflicts`, `aliases`                  | other building ids                                             |
 | age                  | `core_building`                                     | a building id                                                  |
 | age                  | `requirements[].building`, `retire`                 | building ids                                                   |
-| government           | `policies`                                          | policy ids                                                     |
-| economy              | `policies`                                          | policy ids                                                     |
+| government           | `policies`                                          | policy ids of `kind: government`                               |
+| economy              | `policies`                                          | policy ids of `kind: economy`                                  |
 | government / economy | `min_age`                                           | an age id                                                      |
 | settings             | `defaults.government`, `defaults.economy`           | government and economy ids                                     |
 | settings             | `logistics.min_age`                                 | an age id                                                      |
@@ -69,6 +71,8 @@ Groups are reusable sets of blocks that buildings reference with `{group: wall_m
 | `masonry`                                                                  | cobblestone, stone, stone bricks, bricks, deepslate and blackstone bricks, sandstone, mud bricks and more |
 | `roof`                                                                     | stairs and slabs                                                                                          |
 | `light_source`                                                             | torches, lanterns, glowstone, campfire, candles, redstone lamp and more                                   |
+| `window`                                                                   | **New.** Glass, glass panes, stained glass panes and tinted glass. Used by the Embassy.                   |
+| `logs`                                                                     | Log blocks. Used by the Woodcutter.                                                                       |
 | `bed`, `door`, `carpet`, `banner`                                          | vanilla tags (beds and doors count 2 blocks each)                                                         |
 | `support_beam`                                                             | logs, fences, planks                                                                                      |
 | `natural_stone`                                                            | `minecraft:base_stone_overworld` (mines)                                                                  |
@@ -87,8 +91,9 @@ The file also defines leaf, crop and furniture groups (`oak_leaves`, `farmland`,
 
 Each civilization is mirrored to `plugins/Ages/Towns/<name>.yml` as a human-readable snapshot. The database is the source of truth. Do not edit the dumps.
 
-## Known issues in 0.0.3A
+## Known issues in 0.0.47
 
-* `buildings.conflict_scope` and `protection.tnt_requires_online` are listed in `settings.yml` but the loader does **not** read them, so their built-in defaults (`town` and `true`) always apply. See [settings.yml Reference](/broken/pages/settings-yml-reference).
-* `plugin.yml` lists BlueMap as a soft dependency, but no BlueMap integration ships in this release. Only dynmap is implemented.
-* The helper scripts under `tools/` in the source zip still refer to an older layout (`blockgroups.yml` and a flat `buildings/` folder), so `check_config.py` does not match the current file layout without edits.
+* Some governments list policies of the wrong `kind`, which are ignored, and five policies are offered by nothing. See [Release Notes 0.0.47](release-notes-0.0.47.md).
+* `plugin.yml` lists BlueMap as a soft dependency, but only a dynmap integration ships.
+* The helper scripts under `tools/` still refer to an older layout (`blockgroups.yml` and a flat `buildings/` folder), so `check_config.py` needs path changes.
+* **Disabled** buildings still count toward age unlocks. They are still ignored for limits and most other checks.

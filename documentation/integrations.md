@@ -1,10 +1,16 @@
 # Integrations
 
-All integrations are **soft dependencies**: Ages works without them.
+All integrations are **soft dependencies**: Ages works without them, apart from the money features that need Vault.
 
 ## Vault
 
-Vault connects Ages to your economy plugin. It is used for **personal funds**: `/ages contribute money` and `/ages withdraw`. The economy is resolved lazily, so it may register after Ages enables. Without Vault, those money commands are unavailable and the treasury still works from building income.
+Vault connects Ages to your economy plugin. In 0.0.47 it matters more than before. It is used for:
+
+* **Paying building money costs** from the buyer's own balance (unless the economy charges the treasury).
+* **Collecting building income** into a player's balance.
+* `/ages contribute money` and `/ages withdraw`.
+
+The economy is resolved lazily, so it may register after Ages enables. Without Vault, money purchases are refused and uncollected building income cannot be paid out. Under Barter (no money) none of this applies.
 
 ## WorldGuard
 
@@ -15,7 +21,7 @@ When a core block is removed by the plugin, the WorldGuard hook clears the core 
 Civilization borders and markers are drawn on dynmap. The map refreshes shortly after startup and whenever civilizations change. If dynmap enables after Ages, the markers are started one tick later.
 
 {% hint style="info" %}
-`plugin.yml` also lists **BlueMap** as a soft dependency, but 0.0.3A ships only a dynmap hook.
+`plugin.yml` also lists **BlueMap** as a soft dependency, but Ages ships only a dynmap hook.
 {% endhint %}
 
 ## PlaceholderAPI

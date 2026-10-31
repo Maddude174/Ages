@@ -1,11 +1,11 @@
 # settings.yml Reference
 
-`plugins/Ages/settings.yml` holds the **global** rules. Per-age rules live in `ages/*.yml`, per-building rules in `buildings/**/*.yml`, and roles in `governments/*.yml`. An older `town.yml` is migrated to this file automatically.
+`plugins/Ages/settings.yml` holds the **global** rules. Per-age rules live in `ages/*.yml`, per-building rules in `buildings/**/*.yml`, and roles in `governments/*.yml`.
 
-Values are read when the plugin starts and on `/ages reload`. Where the loader clamps a value to a minimum, the table says so.
+Values are read when the plugin starts and on `/ages reload`. Where the loader clamps a value to a minimum, the table says so. Keys marked **new** were added after 0.0.3A. `settings.yml` itself is **unchanged between 0.0.41 and 0.0.47**.
 
-{% hint style="warning" %}
-**Two keys are not read in 0.0.3A.** `buildings.conflict_scope` and `protection.tnt_requires_online` appear in the file, but the loader does not parse them. The built-in defaults (`town` and `true`) always apply, whatever you write. Treat them as documentation of intended behaviour until a later release wires them up.
+{% hint style="danger" %}
+Since defaults version 15, `settings.yml` is a **shipped default**. After upgrading from an older version, the first start **replaces it with the jar's copy and does not merge your values**. Your old file is saved in `plugins/Ages/backup/`. Re-apply your changes afterwards. See [Configuration Overview](configuration-overview.md).
 {% endhint %}
 
 ## `founding`
@@ -21,11 +21,11 @@ How civilizations are created.
 
 ## `members` and `defaults`
 
-| Key                   | Default    | Meaning                                                                   |
-| --------------------- | ---------- | ------------------------------------------------------------------------- |
-| `members.max`         | `50`       | Maximum members per civilization.                                         |
-| `defaults.government` | `chiefdom` | Government a new civilization starts with. Must be a valid government id. |
-| `defaults.economy`    | `barter`   | Economy a new civilization starts with. Must be a valid economy id.       |
+| Key                   | Default    | Meaning                                                                                                           |
+| --------------------- | ---------- | ----------------------------------------------------------------------------------------------------------------- |
+| `members.max`         | `50`       | Maximum members per civilization.                                                                                 |
+| `defaults.government` | `chiefdom` | Government a new civilization starts with. Must be a valid government id, otherwise the first loaded one is used. |
+| `defaults.economy`    | `barter`   | Economy a new civilization starts with. Same fallback rule.                                                       |
 
 ## `protection`
 
@@ -36,7 +36,7 @@ Land protection for civilization territory.
 | `protection.block_mob_spawning`   | `true`  | Hostile mobs cannot spawn inside civilization land.                                                                                                                                         |
 | `protection.block_mob_explosions` | `true`  | Creepers, ghasts and similar cannot damage civilization blocks.                                                                                                                             |
 | `protection.tnt`                  | `never` | `allow` or `never` for **peacetime** TNT. Anything other than `allow` (including the legacy `war_only`) behaves like `never`. Wartime TNT (Hostile or War relations) can still damage land. |
-| `protection.tnt_requires_online`  | `true`  | Intended: TNT only damages a civilization when at least one member is online. **Not read in 0.0.3A**, the default applies.                                                                  |
+| `protection.tnt_requires_online`  | `true`  | TNT only damages a civilization when at least one member is online. Read since 0.0.4 (ignored in 0.0.3A).                                                                                   |
 
 ## `claims`
 
@@ -44,7 +44,7 @@ Land protection for civilization territory.
 | ------------------------ | ------- | ----------------------------------------------------------------------------------------------------------------------- |
 | `claims.building_margin` | `12`    | Each building claims its own scan area plus this many blocks around it, on top of the civilization's main claim square. |
 
-The main claim is a square around the civilization centre. Its radius is `min(max_radius, base_radius + per_building * (buildings placed inside) + bonuses)`, where the first three values come from the age file and the bonuses are `claim_bonus` from working buildings plus the `claim_radius_add` effect from the government, economy and policies. Buildings with `placement: anywhere` (mines, quarries) do not count toward the per-building growth.
+The main claim is a square around the civilization centre. Its radius is `min(max_radius, base_radius + per_building * (buildings placed inside) + bonuses)`, where the first three values come from the age file and the bonuses are `claim_bonus` from working buildings plus the `claim_radius_add` effect. Buildings with `placement: anywhere` or `placement: foreign` do not count toward the per-building growth and never claim land.
 
 ## `buildings`
 
@@ -52,14 +52,14 @@ The main claim is a square around the civilization centre. Its radius is `min(ma
 | ------------------------------------ | ------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
 | `buildings.max_scan_radius`          | `20`    | Upper bound for any building's `scan` radius. `20` means a 41 x 41 x 41 check, the largest allowed. A building exceeding it fails to load. |
 | `buildings.revalidate_delay_seconds` | `3`     | After blocks change near a building, wait this long before re-validating it (debounce).                                                    |
-| `buildings.conflict_scope`           | `town`  | Intended: `town` or `player` for `conflicts:` checks. **Not read in 0.0.3A**, `town` applies.                                              |
+| `buildings.conflict_scope`           | `town`  | `town` or `player` for `conflicts:` checks. Any other value becomes `town`. Read since 0.0.4.                                              |
 
 ## `respawn`
 
-| Key                                  | Default | Meaning                                                                                                                            |
-| ------------------------------------ | ------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `respawn.enabled`                    | `true`  | Buildings with `provides: {respawn_point: true}` (shrines, chapels, graveyards, keeps and so on) act as civilization spawn points. |
-| `respawn.civilization_overrides_bed` | `false` | `false`: a bed or respawn anchor keeps priority. `true`: the civilization spawn wins.                                              |
+| Key                                  | Default | Meaning                                                                                                                                           |
+| ------------------------------------ | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `respawn.enabled`                    | `true`  | Buildings with `provides: {respawn_point: true}` (shrines, chapels, graveyards, burial mounds, keeps and so on) act as civilization spawn points. |
+| `respawn.civilization_overrides_bed` | `false` | `false`: a bed or respawn anchor keeps priority. `true`: the civilization spawn wins.                                                             |
 
 ## `production`
 
@@ -71,14 +71,17 @@ The main claim is a square around the civilization centre. Its radius is `min(ma
 
 ## `economy`
 
-| Key                               | Default | Meaning                                                                                                                                                     |
-| --------------------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `economy.income_multiplier`       | `1.0`   | Scales **all** treasury money income. Buildings create money from nothing, so lower this on servers with a tightly balanced economy. Minimum 0.             |
-| `economy.ledger.loaded_entries`   | `200`   | Ledger lines kept in memory per civilization. All lines are stored in the database. Clamped to at least 20.                                                 |
-| `economy.ledger.coalesce_minutes` | `60`    | Production and tax income within this window merges into one ledger line. Clamped to at least 1.                                                            |
-| `economy.contributions.items`     | map     | RP awarded **per item** when a member contributes materials, before economy modifiers (`contribution_rate_mult`). Unknown materials are reported as errors. |
+| Key                                     | Default | Meaning                                                                                                                                                                                                   |
+| --------------------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `economy.income_multiplier`             | `1.0`   | Scales **all** building money income, whether it goes to the treasury or stays on the building. Buildings create money from nothing, so lower this on servers with a tightly balanced economy. Minimum 0. |
+| `economy.no_money_purchase_points_mult` | `2.0`   | **New.** When the civilization's economy has `money_enabled: false` (Barter), building money costs are **dropped** and RP costs are multiplied by this value. Clamped to at least 1.0.                    |
+| `economy.ledger.loaded_entries`         | `200`   | Ledger lines kept in memory per civilization. All lines are stored in the database. Clamped to at least 20.                                                                                               |
+| `economy.ledger.coalesce_minutes`       | `60`    | Production and tax income within this window merges into one ledger line. Clamped to at least 1.                                                                                                          |
+| `economy.contributions.items`           | map     | RP awarded **per item** when a member contributes materials, before economy modifiers (`contribution_rate_mult`). Unknown materials are reported as errors.                                               |
 
-Shipped contribution values include logs `0.16`, cobblestone `0.06`, stone `0.08`, bread `0.6`, leather `0.4`, coal `0.3`, raw iron `0.6`, iron ingot `0.7`, gold ingot `1.2`, book `0.88`, emerald `8.0` and diamond `12.0`. Items not listed cannot be contributed.
+Shipped contribution values include logs `0.16`, cobblestone `0.06`, stone `0.08`, bread `0.6`, leather `0.4`, coal `0.3`, raw iron `0.6`, iron ingot `0.7`, gold ingot `1.2`, book `0.88`, emerald `8.0` and diamond `12.0`. Items not listed cannot be contributed. These values were **not** rescaled when building prices rose in 0.0.47.
+
+How money is split and who pays for buildings is set per economy, not here. See [Economies](economies.md).
 
 ## `limits`
 
@@ -93,7 +96,7 @@ limits:
     faith:   {per_player: 3}
 ```
 
-Each tag accepts `per_player` and `per_town`. `0` or absent means unlimited at this level. Age files add their own `tag_limits`, and **the strictest non-zero cap wins**. Policies and governments can raise caps with the `tag_limit_add.<tag>` effect. See [Buildings](buildings.md) for the full limit rules.
+Each tag accepts `per_player` and `per_town`. `0` or absent means unlimited at this level. Age files add their own `tag_limits`, and **the strictest non-zero cap wins**. Policies and governments can raise caps with the `tag_limit_add.<tag>` effect. Tags with no entry here and none in the age file (for example the Woodcutter's `forestry`, or `government` and `military`) are unlimited. See [Buildings](buildings.md).
 
 ## `villagers` and `shop`
 
@@ -105,7 +108,7 @@ Each tag accepts `per_player` and `per_town`. `0` or absent means unlimited at t
 
 ## `logistics`
 
-Rail networks that move goods between buildings. See [Logistics](/broken/pages/logistics).
+Rail networks that move goods between buildings. See [Logistics](logistics.md).
 
 | Key                                    | Default      | Meaning                                                                                              |
 | -------------------------------------- | ------------ | ---------------------------------------------------------------------------------------------------- |
@@ -118,13 +121,13 @@ Rail networks that move goods between buildings. See [Logistics](/broken/pages/l
 
 ## `migration`
 
-| Key                                     | Default | Meaning                                                                |
-| --------------------------------------- | ------- | ---------------------------------------------------------------------- |
-| `migration.legacy_money_cost_to_points` | `0.1`   | Old building files using `cost: {money: N}` are read as `N * this` RP. |
+| Key                                     | Default | Meaning                                                                                                                                          |
+| --------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `migration.legacy_money_cost_to_points` | `0.1`   | Old building files using `cost: {money: N}` were read as `N * this` RP. Money costs are now real money, so this only matters for very old files. |
 
 ## `diplomacy`
 
-See [Diplomacy and War](/broken/pages/diplomacy-and-war).
+See [Diplomacy and War](diplomacy-and-war.md).
 
 | Key                            | Default | Meaning                                                                  |
 | ------------------------------ | ------- | ------------------------------------------------------------------------ |
@@ -141,9 +144,17 @@ See [Diplomacy and War](/broken/pages/diplomacy-and-war).
 | `governance.election_cycle_days`  | `7`     | Full cycle between election starts for elected governments. Minimum 1.                       |
 | `governance.election_voting_days` | `3`     | Days that voting stays open before the tally. Minimum 1, and **capped at the cycle length**. |
 
+## `metrics`
+
+| Key               | Default | Meaning                                                                                                                                                          |
+| ----------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `metrics.enabled` | `true`  | **New.** Sends anonymous usage statistics through bStats. Servers can also opt out globally in `plugins/bStats/config.yml`. See [Integrations](integrations.md). |
+
 ## Tuning recipes
 
-* **Slower, harder server:** lower `production.max_speed_bonus`, raise `claims` margins carefully, set `economy.income_multiplier` to `0.7`.
+* **Faster progression:** shipped prices are very high compared with income. Raise the contribution values in `economy.contributions.items`, raise `economy.income_multiplier`, or lower building and age costs in their files.
+* **Slower, harder server:** lower `production.max_speed_bonus`, and set `economy.income_multiplier` to `0.7`.
 * **Peaceful server:** set `diplomacy.enabled: false` to disable all diplomacy and war features.
 * **Creative or event server:** set `shop.deny_creative_purchase: false` and `shop.remote_purchase: true`.
 * **Early rail:** set `logistics.min_age: tribal` for early logistics experiments.
+* **No telemetry:** set `metrics.enabled: false`.

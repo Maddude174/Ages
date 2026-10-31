@@ -27,11 +27,16 @@ function:
 ```yaml
 always:
   - {points: 1}          # resource points to the civilization
-  - {money: 5}           # treasury money to the civilization
+  - {money: 5}           # money, routed by the economy (see below)
   - {item: FEATHER, min: 1, max: 3, chance: 0.7}   # items to the output container
 ```
 
-Points and money go to the civilization, not to a container. Money is multiplied by `money_output_mult` and `economy.income_multiplier`. If the economy has `money_enabled: false`, money becomes RP at `money_to_points`.
+Points go to the civilization. Money is multiplied by `money_output_mult` and `economy.income_multiplier`, then **routed**:
+
+* If the economy has `money_enabled: false`, it becomes RP at `money_to_points`.
+* Otherwise the **treasury share** is the economy's `income_to_civ` plus policy effects (0 to 1, or 1 under a government with `force_income_to_civ`). The rest is **stored on the building** until someone collects it into their own Vault balance.
+
+See [Economies](economies.md) for the full rules.
 
 ## Function types
 
@@ -65,7 +70,7 @@ function:
 function: {type: tax, interval: 600, per_resident: 0.4}
 ```
 
-Each cycle pays `per_resident * population` into the civilization treasury (population counts players and villagers). With `payout: owner` the income is stored on the building for its owner instead (legacy behaviour, capped by `max_stored`).
+Each cycle earns `per_resident * population` as money (population counts players and villagers). That money is routed like any other building income, so with the default `income_to_civ` it may stay on the building. With `payout: owner` the income is always stored on the building for its owner (capped by `max_stored`).
 
 ### `sell`
 
@@ -76,7 +81,7 @@ function:
   max_items: 64
 ```
 
-Each cycle sells up to `max_items` items from the input container at `prices` and pays the total as money. Prices cannot be negative.
+Each cycle sells up to `max_items` items from the input container at `prices` and earns the total as money, routed like other building income. Prices cannot be negative.
 
 ### `none`
 
@@ -84,20 +89,53 @@ No timer logic besides `always`. Used by cores, storage, defence and infrastruct
 
 ## Recipe modes (processors)
 
-| Mode       | Behaviour each cycle                                                                                  |
-| ---------- | ----------------------------------------------------------------------------------------------------- |
-| `random`   | Recipes are shuffled. The **first one that can run** runs.                                            |
-| `first`    | Recipes are tried in file order. The first that can run runs. Used by the progressive Mine.           |
-| `all`      | **Every** recipe that can run, runs.                                                                  |
-| `selected` | Only the recipe the owner selected in the building menu runs (the first available if none is chosen). |
+| Mode       | Behaviour each cycle                                                                        |
+| ---------- | ------------------------------------------------------------------------------------------- |
+| `random`   | Recipes are shuffled. The **first one that can run** runs.                                  |
+| `first`    | Recipes are tried in file order. The first that can run runs. Used by the progressive Mine. |
+| `all`      | **Every** recipe that can run, runs.                                                        |
+| `selected` | The recipe the owner selected in the Production panel runs first. See below.                |
 
-A recipe is skipped if `require_level` exceeds the building's upgrade level, or `require_age` is later than the civilization's current age. If no recipe is unlocked the status is `No unlocked recipes`.
+A recipe is skipped if `require_level` exceeds the building's upgrade level, or `require_age` is later than the civilization's current age. Both are **minimums**, so a higher level or age still unlocks the recipe. If no recipe is unlocked the status is `No unlocked recipes`.
+
+### `selected` mode and `select_as`
+
+In `selected` mode the owner or a manager picks an entry in the **Production** panel. By default each recipe is its own entry, keyed by its `id`.
+
+Since 0.0.47 several recipes can share a `select_as` key, so one menu choice stands for a whole **family**, for example the Woodcutter's tool tiers for one wood type:
+
+```yaml
+recipes:
+  - id: oak_wood
+    select_as: oak
+    name: Oak
+    require_level: 1
+    consume: [{item: WOODEN_AXE, durability: 4}]
+    produce: ...
+  - id: oak_stone
+    select_as: oak
+    name: Oak
+    require_level: 2
+    consume: [{item: STONE_AXE, durability: 4}]
+    produce: ...
+```
+
+How a selection resolves:
+
+1. A recipe whose `id` equals the selection runs first.
+2. Otherwise the recipes in the `select_as` family run, **highest `require_level` first**.
+3. Otherwise the first unlocked recipe runs.
+4. If the chosen recipe cannot run this cycle (missing input or full output), any other unlocked recipe that **can** run is used instead.
+5. The status only reads `Needs ...` when no unlocked recipe could run.
+
+Locked tiers stay hidden in the panel until the level and age allow them.
 
 ## Recipe format
 
 ```yaml
 recipes:
   - id: forage              # needed for 'selected' mode, must be unique per building
+    select_as: berries      # optional: group tiers under one menu choice
     name: Forage
     interval: 240           # optional: the NEXT cycle after this recipe is this long
     optional: true          # dropped silently if items don't exist on this server version
@@ -141,7 +179,7 @@ Entry kinds:
 - {item: SWEET_BERRIES, min: 1, max: 3, percent: 25}   # item, random quantity min..max
 - {group: wool_items, min: 1, max: 3, chance: 0.8}     # a random item from a group
 - {points: 2}                                          # RP (min/max allowed, 2 decimals)
-- {money: 5}                                           # treasury money
+- {money: 5}                                           # money, routed by the economy
 - {item: AIR, percent: 55}                             # explicit "nothing"
 ```
 
@@ -163,7 +201,7 @@ Plus `always: {points: 0.4}` every cycle. Put a bow and arrows in the barrel, an
 
 ## Worked example: the Marketplace
 
-A `processor` whose recipes consume food and `produce` `{money: N}` with `pick: all`, turning goods into treasury money. For example, 4 bread produces 6 money. Money is subject to your economy modifiers, so under the Barter economy (`money_enabled: false`) it converts to RP.
+A `processor` whose recipes consume food and `produce` `{money: N}` with `pick: all`, turning goods into money. That money is multiplied by your economy modifiers and then split between the treasury and the building. Under Barter (`money_enabled: false`) it converts to RP.
 
 ## Tips
 
