@@ -1,6 +1,6 @@
 # Policies and Effects
 
-A **policy** is a modifier that a civilization can adopt, limited by slots. Files live in `plugins/Ages/policies/`. Each policy belongs to either the **government** or the **economy** pool. There are **65** shipped policies, 32 government and 33 economy. Costs are RP, with money added on most (paid by the civilization, with money from the treasury).
+A **policy** is a modifier that a civilization can adopt, limited by slots. Files live in `plugins/Ages/policies/`. Each policy belongs to either the **government** or the **economy** pool. There are **65** shipped policies: 31 government and 34 economy. Costs are RP, with money added on many (paid by the civilization, with the money from the treasury).
 
 ```yaml
 id: tithes
@@ -11,7 +11,7 @@ kind: government        # government | economy
 min_age: village
 exclusive_group: fiscal # only one active policy per group
 effects: {points_output_mult: 1.1}
-cost: {points: 4000, money: 1200}   # paid once when adopted
+cost: {points: 150}     # paid once when adopted
 ```
 
 | Field             | Meaning                                                                                                                       |
@@ -64,86 +64,84 @@ Unknown keys are stored and shown in the civilization menu but have no gameplay 
 Stacking many multipliers compounds quickly. Prefer small numbers (1.05 to 1.2 for multipliers, a few points for adders).
 {% endhint %}
 
-## Shipped government policies (32)
+## Shipped government policies (31)
 
-Costs are `RP / money`.
+| Policy             | Min age    | Group  | Effects                                                                                                    | Cost               |
+| ------------------ | ---------- | ------ | ---------------------------------------------------------------------------------------------------------- | ------------------ |
+| Neolithic Sharing  | Neolithic  | none   | `income_to_civ 0.2`, `points_output_mult 1.05`, `building_cost_mult 0.95`                                  | 80 RP              |
+| Oral Law           | Neolithic  | none   | `repair_cost_mult 0.95`, `points_output_mult 1.02`                                                         | 80 RP              |
+| Seasonal Hunt      | Neolithic  | none   | `points_output_mult 1.1`                                                                                   | 80 RP              |
+| Blood Feud         | Tribal     | none   | `production_speed_mult 0.92`, `claim_radius_add 1`, `repair_cost_mult 0.9`                                 | 100 RP             |
+| Communal Labor     | Tribal     | none   | `building_cost_mult 0.9`, `points_output_mult 1.05`                                                        | 100 RP             |
+| Council Fires      | Tribal     | none   | `claim_radius_add 1`, `production_speed_mult 0.98`                                                         | 100 RP             |
+| Land Grants        | Tribal     | none   | `building_cost_mult 0.9`, `income_to_civ -0.05`, `claim_radius_add 1`                                      | 100 RP             |
+| Path Markers       | Tribal     | none   | `claim_radius_add 1`                                                                                       | 100 RP             |
+| Seasonal Camps     | Tribal     | none   | `production_speed_mult 1.08`, `claim_radius_add -1`                                                        | 100 RP             |
+| Tribal Muster      | Tribal     | none   | `production_speed_mult 1.1`                                                                                | 100 RP             |
+| Charter of Rights  | Village    | none   | `income_to_civ -0.1`, `points_output_mult 1.06`, `money_output_mult 1.05`                                  | 150 RP             |
+| Church Lands       | Village    | none   | `points_output_mult 1.07`, `claim_radius_add 1`, `income_to_civ 0.05`                                      | 150 RP             |
+| Civic Projects     | Village    | none   | `production_speed_mult 1.1`, `building_cost_mult 1.08`, `points_output_mult 1.05`                          | 150 RP             |
+| Corvée             | Village    | none   | `building_cost_mult 0.88`, `production_speed_mult 0.95`, `points_output_mult 0.97`                         | 150 RP             |
+| Feudal Oaths       | Village    | none   | `claim_radius_add 2`, `income_to_civ -0.1`, `building_cost_mult 0.95`                                      | 150 RP             |
+| Fire Watch         | Village    | none   | `repair_cost_mult 0.85`                                                                                    | 150 RP             |
+| Frugal Rule        | Village    | fiscal | `building_cost_mult 0.9`, `money_output_mult 0.92`, `points_output_mult 0.95`                              | 150 RP             |
+| Granary Law        | Village    | none   | `points_output_mult 1.1`, `production_speed_mult 1.03`                                                     | 150 RP             |
+| Militia Levy       | Village    | none   | `claim_radius_add 2`, `production_speed_mult 0.95`, `repair_cost_mult 0.9`                                 | 150 RP             |
+| Royal Charters     | Village    | none   | `building_cost_mult 0.92`, `claim_radius_add 1`, `points_output_mult 0.97`                                 | 150 RP             |
+| Tithes             | Village    | fiscal | `points_output_mult 1.1`                                                                                   | 150 RP             |
+| Tribute            | Village    | fiscal | `income_to_civ 0.15`, `money_output_mult 1.05`                                                             | 150 RP             |
+| Village Militia    | Village    | none   | `claim_radius_add 1`, `repair_cost_mult 0.92`                                                              | 150 RP             |
+| Castle Ward        | Medieval   | none   | `claim_radius_add 2`, `repair_cost_mult 0.85`, `building_cost_mult 1.05`                                   | 250 RP + 50 money  |
+| Guild Charters     | Medieval   | none   | `production_speed_mult 1.08`, `building_cost_mult 1.06`, `points_output_mult 1.04`                         | 250 RP + 50 money  |
+| Guild Oaths        | Medieval   | none   | `production_speed_mult 1.06`, `points_output_mult 1.04`                                                    | 250 RP + 50 money  |
+| Sappers' Corps     | Medieval   | none   | `repair_cost_mult 0.8`, `building_cost_mult 1.08`                                                          | 250 RP + 50 money  |
+| Scorched Earth     | Medieval   | none   | `repair_cost_mult 0.75`, `production_speed_mult 0.9`, `money_output_mult 0.95`                             | 250 RP + 50 money  |
+| Secret Police      | Medieval   | none   | `production_speed_mult 1.05`, `points_output_mult 0.97`, `repair_cost_mult 0.95`                           | 250 RP + 50 money  |
+| University Charter | Medieval   | none   | `production_speed_mult 1.1`, `points_output_mult 1.06`                                                     | 250 RP + 50 money  |
+| Labour Unions      | Industrial | none   | `points_output_mult 1.1`, `money_output_mult 1.08`, `building_cost_mult 1.1`, `production_speed_mult 0.97` | 400 RP + 100 money |
 
-| Policy             | Min age    | Group  | Effects                                                    | Cost            |
-| ------------------ | ---------- | ------ | ---------------------------------------------------------- | --------------- |
-| Seasonal Camps     | Neolithic  | none   | `claim_radius_add 2`                                       | 600             |
-| Fire Watch         | Neolithic  | none   | `repair_cost_mult 0.95`                                    | 750             |
-| Seasonal Hunt      | Neolithic  | none   | `points_output_mult 1.1`                                   | 1,000           |
-| Oral Law           | Neolithic  | none   | `contribution_rate_mult 1.05`, `claim_radius_add 1`        | 1,150           |
-| Neolithic Sharing  | Neolithic  | none   | `contribution_rate_mult 1.15`                              | 1,500           |
-| Council Fires      | Tribal     | none   | `contribution_rate_mult 1.05`                              | 1,500           |
-| Path Markers       | Tribal     | none   | `claim_radius_add 2`                                       | 1,150           |
-| Tribal Muster      | Tribal     | none   | `production_speed_mult 1.1`                                | 1,000           |
-| Blood Feud         | Tribal     | none   | `claim_radius_add 1`, `building_cost_mult 1.05`            | 1,900           |
-| Tribute            | Tribal     | none   | `income_to_civ 0.1`, `contribution_rate_mult 1.05`         | 1,250           |
-| Communal Labor     | none       | none   | `production_speed_mult 1.1`, `money_output_mult 0.95`      | 2,250           |
-| Frugal Rule        | none       | fiscal | `building_cost_mult 0.92`, `points_output_mult 0.95`       | 3,750           |
-| Guild Oaths        | Village    | none   | `production_speed_mult 1.08`                               | 1,500 / 1,350   |
-| Village Militia    | Village    | none   | `claim_radius_add 1`, `repair_cost_mult 0.95`              | 1,500 / 500     |
-| Granary Law        | Village    | none   | `points_output_mult 1.05`, `income_to_civ 0.08`            | 2,400 / 2,050   |
-| Charter of Rights  | Village    | none   | `building_cost_mult 0.97`, `contribution_rate_mult 1.05`   | 3,000 / 2,700   |
-| Tithes             | Village    | fiscal | `points_output_mult 1.1`                                   | 4,000 / 1,200   |
-| Land Grants        | Village    | none   | `claim_radius_add 12`, `building_cost_mult 1.05`           | 7,500 / 6,750   |
-| Royal Charters     | Village    | none   | `money_output_mult 1.05`, `claim_radius_add 4`             | 6,000 / 1,800   |
-| Militia Levy       | Medieval   | none   | `production_speed_mult 0.95`                               | 1,500 / 1,350   |
-| University Charter | Medieval   | none   | `production_speed_mult 1.08`, `points_output_mult 1.05`    | 4,000 / 1,250   |
-| Sappers Corps      | Medieval   | none   | `repair_cost_mult 0.7`                                     | 2,000 / 600     |
-| Scorched Earth     | Medieval   | none   | `repair_cost_mult 1.75`                                    | 2,000 / 600     |
-| Church Lands       | Medieval   | none   | `tag_limit_add.faith 1`, `points_output_mult 1.04`         | 3,150 / 2,700   |
-| Feudal Oaths       | Medieval   | none   | `claim_radius_add 2`, `contribution_rate_mult 1.08`        | 3,400 / 2,950   |
-| Castle Ward        | Medieval   | none   | `repair_cost_mult 0.9`, `claim_radius_add 1`               | 3,750 / 3,400   |
-| Civic Projects     | Medieval   | none   | `housing_mult 1.1`, `production_speed_mult 1.05`           | 18,750 / 16,900 |
-| Guild Charters     | Medieval   | none   | `money_output_mult 1.1`                                    | 18,750 / 16,900 |
-| Rail Subsidy       | Industrial | none   | `production_speed_mult 1.05`                               | 1,000 / 300     |
-| Labour Unions      | Industrial | none   | `production_speed_mult 1.05`, `contribution_rate_mult 1.1` | 4,150 / 3,600   |
-| Factory Boards     | Industrial | none   | `production_speed_mult 1.08`, `points_output_mult 1.06`    | 4,500 / 4,050   |
-| Secret Police      | Industrial | none   | `claim_radius_add 2`, `building_cost_mult 1.08`            | 4,000 / 1,200   |
+## Shipped economy policies (34)
 
-The **fiscal** exclusive group (Frugal Rule, Tithes) allows only one active fiscal policy. Blood Feud, Frugal Rule, Rail Subsidy, Seasonal Camps and Secret Police are not offered by any shipped government, so they cannot be adopted unless you add them to a list.
+| Policy              | Min age    | Group  | Effects                                                                           | Cost               |
+| ------------------- | ---------- | ------ | --------------------------------------------------------------------------------- | ------------------ |
+| Forage Rights       | Neolithic  | none   | `points_output_mult 1.08`, `building_cost_mult 0.97`                              | 60 RP              |
+| Gift Economy        | Neolithic  | none   | `points_output_mult 1.1`, `money_output_mult 0.85`, `building_cost_mult 0.95`     | 60 RP              |
+| Tool Sharing        | Neolithic  | none   | `building_cost_mult 0.93`, `production_speed_mult 1.02`                           | 60 RP              |
+| Barter Posts        | Tribal     | none   | `points_output_mult 1.05`, `production_speed_mult 1.03`                           | 80 RP              |
+| Communal Stores     | Tribal     | none   | `points_output_mult 1.08`, `income_to_civ 0.15`, `money_output_mult 0.9`          | 80 RP              |
+| Kin Stores          | Tribal     | none   | `points_output_mult 1.06`, `money_output_mult 0.92`                               | 80 RP              |
+| Potlatch            | Tribal     | none   | `points_output_mult 1.12`, `money_output_mult 0.8`                                | 80 RP              |
+| Civic Tithe         | Village    | fiscal | `income_to_civ 0.18`, `money_output_mult 0.95`                                    | 50 RP + 200 money  |
+| Common Pasture      | Village    | none   | `points_output_mult 1.05`, `claim_radius_add 1`                                   | 50 RP + 200 money  |
+| Craft Guilds        | Village    | none   | `points_output_mult 1.08`, `production_speed_mult 1.04`                           | 50 RP + 200 money  |
+| Hearth Tax          | Village    | fiscal | `income_to_civ 0.1`, `building_cost_mult 1.05`                                    | 50 RP + 200 money  |
+| Market Day          | Village    | none   | `money_output_mult 1.06`                                                          | 50 RP + 200 money  |
+| Open Fields         | Village    | none   | `points_output_mult 1.08`, `claim_radius_add 1`                                   | 50 RP + 200 money  |
+| Open Market         | Village    | none   | `money_output_mult 1.12`                                                          | 50 RP + 200 money  |
+| Private Enterprise  | Village    | none   | `income_to_civ -0.2`, `money_output_mult 1.1`, `points_output_mult 1.05`          | 50 RP + 200 money  |
+| Road Tolls          | Village    | fiscal | `income_to_civ 0.1`, `money_output_mult 1.03`                                     | 50 RP + 200 money  |
+| Sales Levy          | Village    | fiscal | `income_to_civ 0.12`, `money_output_mult 0.96`                                    | 50 RP + 200 money  |
+| Trade Tariffs       | Village    | fiscal | `income_to_civ 0.12`, `money_output_mult 0.97`                                    | 50 RP + 200 money  |
+| Central Bank        | Medieval   | none   | `money_output_mult 1.15`, `building_cost_mult 1.05`, `income_to_civ 0.08`         | 75 RP + 400 money  |
+| Free Ports          | Medieval   | none   | `money_output_mult 1.15`, `income_to_civ -0.05`                                   | 75 RP + 400 money  |
+| Investment Bonds    | Medieval   | none   | `money_output_mult 1.12`, `building_cost_mult 1.05`                               | 75 RP + 400 money  |
+| Merchant Courts     | Medieval   | none   | `money_output_mult 1.08`, `income_to_civ 0.05`                                    | 75 RP + 400 money  |
+| Merchant Privileges | Medieval   | none   | `money_output_mult 1.1`, `income_to_civ -0.12`, `points_output_mult 1.03`         | 75 RP + 400 money  |
+| Public Works        | Medieval   | none   | `building_cost_mult 0.9`, `income_to_civ 0.08`, `points_output_mult 1.04`         | 75 RP + 400 money  |
+| State Requisition   | Medieval   | fiscal | `income_to_civ 0.25`, `money_output_mult 0.9`, `points_output_mult 0.95`          | 75 RP + 400 money  |
+| Toll Roads          | Medieval   | none   | `money_output_mult 1.07`, `claim_radius_add 1`, `income_to_civ 0.06`              | 75 RP + 400 money  |
+| War Bonds           | Medieval   | none   | `money_output_mult 1.05`, `income_to_civ 0.1`, `building_cost_mult 1.05`          | 75 RP + 400 money  |
+| War Taxes           | Medieval   | fiscal | `income_to_civ 0.2`, `building_cost_mult 1.1`, `production_speed_mult 0.95`       | 75 RP + 400 money  |
+| Work Quotas         | Medieval   | none   | `points_output_mult 1.1`, `production_speed_mult 0.97`, `money_output_mult 0.95`  | 75 RP + 400 money  |
+| Factory Acts        | Industrial | none   | `production_speed_mult 0.95`, `money_output_mult 1.1`, `points_output_mult 1.05`  | 100 RP + 800 money |
+| Factory Boards      | Industrial | none   | `production_speed_mult 1.15`, `building_cost_mult 1.08`, `income_to_civ 0.1`      | 100 RP + 800 money |
+| Patent Office       | Industrial | none   | `production_speed_mult 1.08`, `building_cost_mult 1.05`, `money_output_mult 1.06` | 100 RP + 800 money |
+| Rail Subsidy        | Industrial | none   | `production_speed_mult 1.12`, `building_cost_mult 0.95`, `money_output_mult 0.97` | 100 RP + 800 money |
+| Stock Exchange      | Industrial | none   | `money_output_mult 1.2`, `income_to_civ -0.05`                                    | 100 RP + 800 money |
 
-## Shipped economy policies (33)
+The **fiscal** exclusive group holds Frugal Rule, Tithes and Tribute (government) and Civic Tithe, Hearth Tax, Road Tolls, Sales Levy, State Requisition, Trade Tariffs and War Taxes (economy). Only one fiscal policy can be active at a time. Policies with a positive `income_to_civ` push building money into the treasury, and negative ones leave it on the buildings for owners to collect. Under Barter (no money) the income-split effects do nothing, because all money is converted to RP.
 
-| Policy              | Min age    | Effects                                                                       | Cost            |
-| ------------------- | ---------- | ----------------------------------------------------------------------------- | --------------- |
-| Forage Rights       | Neolithic  | `points_output_mult 1.08`                                                     | 750             |
-| Tool Sharing        | Neolithic  | `production_speed_mult 1.08`, `points_output_mult 1.05`                       | 600             |
-| Gift Economy        | Neolithic  | `contribution_rate_mult 1.15`, `money_output_mult 0.9`                        | 1,150           |
-| Kin Stores          | Tribal     | `points_output_mult 1.06`, `income_to_civ 0.05`                               | 1,350           |
-| Hearth Tax          | Tribal     | `claim_radius_add -1`                                                         | 1,500           |
-| Potlatch            | Tribal     | `contribution_rate_mult 1.2`                                                  | 1,500           |
-| Barter Posts        | Tribal     | `contribution_rate_mult 1.1`, `money_output_mult 1.05`                        | 1,650           |
-| Communal Stores     | none       | `contribution_rate_mult 1.15`                                                 | 2,250           |
-| Work Quotas         | none       | `production_speed_mult 1.1`, `money_output_mult 0.9`                          | 4,000           |
-| Open Fields         | Village    | `points_output_mult 1.12`                                                     | 1,500 / 1,350   |
-| Common Pasture      | Village    | `points_output_mult 1.07`, `income_to_civ 0.05`                               | 2,100 / 1,800   |
-| Sales Levy          | Village    | `income_to_civ 0.1`, `money_output_mult 0.98`                                 | 1,500 / 450     |
-| Market Day          | Village    | `money_output_mult 1.12`, `income_to_civ 0.05`                                | 2,650 / 2,250   |
-| Civic Tithe         | Village    | `income_to_civ 0.25`                                                          | 2,650 / 2,250   |
-| Craft Guilds        | Village    | `production_speed_mult 1.06`, `building_cost_mult 1.03`                       | 2,850 / 2,500   |
-| Private Enterprise  | Village    | `income_to_civ -0.15`, `money_output_mult 1.05`                               | 2,000 / 600     |
-| Public Works        | Village    | `income_to_civ 0.2`, `building_cost_mult 0.95`                                | 2,250 / 650     |
-| Trade Tariffs       | Village    | `money_output_mult 1.06`, `contribution_rate_mult 0.95`, `income_to_civ 0.12` | 5,000 / 1,500   |
-| Open Market         | Village    | `money_output_mult 1.1`, `income_to_civ -0.05`                                | 9,000 / 8,100   |
-| Road Tolls          | Medieval   | `money_output_mult 1.15`, `income_to_civ 0.08`                                | 1,000 / 300     |
-| War Taxes           | Medieval   | `repair_cost_mult 0.9`, `money_output_mult 1.1`, `income_to_civ 0.15`         | 2,000 / 600     |
-| Corvee              | Medieval   | `production_speed_mult 1.1`, `building_cost_mult 0.94`                        | 3,000 / 2,700   |
-| Toll Roads          | Medieval   | `income_to_civ 0.12`, `money_output_mult 1.05`                                | 2,200 / 650     |
-| Merchant Courts     | Medieval   | `money_output_mult 1.1`, `income_to_civ -0.05`                                | 3,600 / 3,150   |
-| Merchant Privileges | Medieval   | `income_to_civ -0.2`, `money_output_mult 1.08`                                | 3,750 / 3,400   |
-| Free Ports          | Medieval   | `income_to_civ -0.1`, `money_output_mult 1.12`, `building_cost_mult 1.05`     | 4,150 / 3,600   |
-| State Requisition   | Medieval   | `income_to_civ 0.35`, `money_output_mult 0.95`                                | 3,000 / 900     |
-| Investment Bonds    | Medieval   | `building_cost_mult 0.95`                                                     | 22,500 / 20,250 |
-| Factory Acts        | Industrial | `production_speed_mult 1.12`                                                  | 1,500 / 1,350   |
-| War Bonds           | Industrial | `money_output_mult 1.2`                                                       | 1,000 / 300     |
-| Central Bank        | Industrial | `income_to_civ 0.15`, `money_output_mult 1.08`, `withdraw_limit_add 100`      | 4,900 / 4,300   |
-| Stock Exchange      | Industrial | `money_output_mult 1.18`, `income_to_civ -0.08`, `building_cost_mult 1.05`    | 3,500 / 1,050   |
-| Patent Office       | Industrial | `production_speed_mult 1.12`, `points_output_mult 1.05`                       | 4,350 / 3,850   |
-
-Policies with a positive `income_to_civ` push building money into the treasury, and negative ones leave it on the buildings for owners to collect. Under Barter (no money) the income-split effects do nothing, because all money is converted to RP.
+Eight policies are offered by no shipped government or economy: Seasonal Hunt, Tithes, Tribal Muster, Civic Tithe, Patent Office, Stock Exchange, War Bonds and War Taxes. Add their ids to a government's or economy's `policies:` list to use them.
 
 ## Writing a policy
 

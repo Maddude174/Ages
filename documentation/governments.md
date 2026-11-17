@@ -1,64 +1,66 @@
 # Governments
 
-A **government** decides who may do what inside a civilization, how the leader is chosen, which policies are available, and gives small modifiers. Since 0.0.4 it can also override how buildings are paid for and how building income is routed. Governments are independent of economies. Files live in `plugins/Ages/governments/`.
+A **government** decides who may do what inside a civilization, how the leader is chosen, which policies are available, and gives small modifiers. It can also override how buildings are paid for and how building income is routed. Governments are independent of economies. Files live in `plugins/Ages/governments/`.
 
 ## Shipped governments
 
-All eight load in 0.0.47.
+| Government         | Min age    | Leader          | Selection   | Policy slots | Change cost          | Cooldown |
+| ------------------ | ---------- | --------------- | ----------- | ------------ | -------------------- | -------- |
+| Chiefdom (default) | none       | Chief           | appointed   | 2            | 500 RP               | 24 h     |
+| Elder Council      | none       | Speaker         | **elected** | 2            | 600 RP               | 24 h     |
+| Anarchy            | Tribal     | none            | **none**    | 2            | 800 RP               | 12 h     |
+| Feudal             | Village    | High Lord       | appointed   | 3            | 1,500 RP + 200 money | 48 h     |
+| Monarchy           | Village    | Monarch         | appointed   | 3            | 1,800 RP + 300 money | 72 h     |
+| Republic           | Village    | Consul          | **elected** | 3            | 1,600 RP + 400 money | 48 h     |
+| Theocracy          | Village    | High Priest     | appointed   | 2            | 1,400 RP + 250 money | 48 h     |
+| Communism          | Industrial | Party Secretary | appointed   | 3            | 2,500 RP + 500 money | 48 h     |
 
-| Government         | Min age    | Leader          | Selection   | Policy slots | Change cost (RP / money) | Cooldown |
-| ------------------ | ---------- | --------------- | ----------- | ------------ | ------------------------ | -------- |
-| Chiefdom (default) | none       | Chief           | appointed   | 2            | free                     | 24 h     |
-| Elder Council      | none       | Speaker         | **elected** | 2            | 3,000 / none             | 24 h     |
-| Anarchy            | Tribal     | none            | **none**    | 2            | 2,250 / none             | 12 h     |
-| Monarchy           | Village    | Monarch         | appointed   | 2            | 7,500 / 5,650            | 48 h     |
-| Republic           | Village    | Consul          | **elected** | 3            | 9,000 / 6,750            | 48 h     |
-| Theocracy          | Village    | High Priest     | appointed   | 2            | 5,000 / 1,250            | 48 h     |
-| Dictatorship       | Medieval   | Dictator        | appointed   | 2            | 7,500 / 2,000            | 72 h     |
-| Communism          | Industrial | Party Secretary | appointed   | 3            | 15,000 / 11,250          | 48 h     |
-
-A government's change cost is paid by the **civilization**: RP from the shared points and money from the **treasury**. Under Barter there is no treasury money, so governments that charge money cannot be adopted until you move to an economy that earns it (Commons, for example, costs 3,000 RP).
+A government's change cost is paid by the **civilization**: RP from the shared points and money from the **treasury**. Barter earns no treasury money, so governments that charge money cannot be adopted until you move to an economy that earns it (Commons costs RP only). Change costs also pass through your cost modifiers. The old **Dictatorship** government was removed in 0.0.59.
 
 ### Roles (low to high)
 
-| Government    | Roles                                                           |
-| ------------- | --------------------------------------------------------------- |
-| Chiefdom      | recruit, citizen, elder, chief                                  |
-| Elder Council | recruit, citizen, elder, speaker                                |
-| Anarchy       | free\_person (one role, no leader role)                         |
-| Monarchy      | subject, burgher, steward, noble, monarch                       |
-| Republic      | resident, citizen, magistrate, quaestor, legate, consul         |
-| Theocracy     | faithful, acolyte, elder, high\_priest                          |
-| Dictatorship  | subject, officer, minister, dictator (custom roles not allowed) |
-| Communism     | comrade, cadre, commissar, secretary                            |
+Weights decide rank. A number in brackets is the most members that can hold the role.
+
+| Government    | Roles                                                                                                              |
+| ------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Chiefdom      | recruit (10), citizen (40), elder (70, max 6), chief (100, max 1)                                                  |
+| Elder Council | recruit (10), citizen (40), elder (70, max 8), speaker (100, max 1)                                                |
+| Anarchy       | free\_person (50). There is no leader role.                                                                        |
+| Feudal        | serf (10), freeman (30), steward (50, max 8), noble (75, max 8), high\_lord (100, max 1)                           |
+| Monarchy      | subject (15), soldier (40, max 20), minister (70, max 6), monarch (100, max 1). Custom roles are not allowed.      |
+| Republic      | resident (10), citizen (40), magistrate (60, max 6), quaestor (65, max 3), legate (70, max 3), consul (100, max 1) |
+| Theocracy     | faithful (40), acolyte (55, max 8), elder (70, max 4), high\_priest (100)                                          |
+| Communism     | comrade (40), cadre (60, max 8), commissar (75, max 4), secretary (100)                                            |
 
 ### Modifiers and special rules
 
-| Government    | Modifiers                                                                                                    | Special rules                                                                                                                                                      |
-| ------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Chiefdom      | none                                                                                                         |                                                                                                                                                                    |
-| Elder Council | `contribution_rate_mult 1.15`, `building_cost_mult 0.95`                                                     |                                                                                                                                                                    |
-| Anarchy       | `building_cost_mult 0.95`, `claim_radius_add -2`, `contribution_rate_mult 1.1`                               | No leader. **Cannot be changed by decree**, only by revolution.                                                                                                    |
-| Monarchy      | `building_cost_mult 0.9`, `money_output_mult 1.1`, `claim_radius_add 2`                                      |                                                                                                                                                                    |
-| Republic      | `contribution_rate_mult 1.05`, `production_speed_mult 1.05`                                                  |                                                                                                                                                                    |
-| Theocracy     | `points_output_mult 1.08`, `contribution_rate_mult 1.1`, `claim_radius_add 1`                                |                                                                                                                                                                    |
-| Dictatorship  | `points_output_mult 1.05`, `production_speed_mult 1.05`, `claim_radius_add 2`, `building_cost_mult 1.05`     |                                                                                                                                                                    |
-| Communism     | `points_output_mult 1.15`, `money_output_mult 0.85`, `contribution_rate_mult 1.2`, `building_cost_mult 0.92` | `force_treasury_purchases` and `force_income_to_civ`: **all** building money costs come from the treasury, and **all** building money income goes to the treasury. |
+| Government    | Modifiers                                                                                                                          | Special rules                                                                                                             |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Chiefdom      | none                                                                                                                               |                                                                                                                           |
+| Elder Council | `contribution_rate_mult 1.15`, `building_cost_mult 0.95`                                                                           |                                                                                                                           |
+| Anarchy       | `building_cost_mult 0.95`, `claim_radius_add -2`, `contribution_rate_mult 1.1`                                                     | No leader. **Cannot be changed by decree**, only by revolution.                                                           |
+| Feudal        | `building_cost_mult 0.92`, `money_output_mult 0.95`, `claim_radius_add 3`                                                          | Delegated rule: purchases and income follow the economy.                                                                  |
+| Monarchy      | `points_output_mult 1.08`, `money_output_mult 1.12`, `building_cost_mult 1.05`, `claim_radius_add 2`, `production_speed_mult 1.05` | Centralised: `force_treasury_purchases` and `force_income_to_civ`.                                                        |
+| Republic      | `contribution_rate_mult 1.05`, `production_speed_mult 1.05`                                                                        |                                                                                                                           |
+| Theocracy     | `points_output_mult 1.08`, `contribution_rate_mult 1.1`, `claim_radius_add 1`                                                      |                                                                                                                           |
+| Communism     | `points_output_mult 1.15`, `money_output_mult 0.85`, `contribution_rate_mult 1.2`, `building_cost_mult 0.92`                       | Centralised: **all** building money costs come from the treasury, and **all** building money income goes to the treasury. |
 
 ### Policies each government offers
 
-A policy is only offered through the list that matches its `kind`. These are the policies that **actually work** in each government. Economy policies that appear in a government file are ignored.
+A policy is only offered through the list that matches its `kind`. These are the policies that **work** in each government.
 
-| Government    | Working policies                                                                                                                            |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| Chiefdom      | neolithic\_sharing, seasonal\_hunt, tribal\_muster, tribute, oral\_law, council\_fires, path\_markers                                       |
-| Elder Council | neolithic\_sharing, communal\_labor, land\_grants, council\_fires, path\_markers, charter\_of\_rights, granary\_law                         |
-| Anarchy       | neolithic\_sharing, communal\_labor, land\_grants, militia\_levy, oral\_law                                                                 |
-| Monarchy      | royal\_charters, militia\_levy, tribute, feudal\_oaths, castle\_ward, church\_lands, scorched\_earth, sappers\_corps                        |
-| Republic      | civic\_projects, guild\_charters, guild\_oaths, charter\_of\_rights, village\_militia, university\_charter, labour\_unions, factory\_boards |
-| Theocracy     | tithes, church\_lands, university\_charter, granary\_law, communal\_labor, fire\_watch, oral\_law                                           |
-| Dictatorship  | militia\_levy, scorched\_earth, sappers\_corps, royal\_charters, tribute                                                                    |
-| Communism     | labour\_unions (its other listed policies are economy policies)                                                                             |
+| Government    | Working policies                                                                                                                                     |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Chiefdom      | neolithic\_sharing, oral\_law, path\_markers, council\_fires, seasonal\_camps, blood\_feud, communal\_labor                                          |
+| Elder Council | neolithic\_sharing, oral\_law, council\_fires, path\_markers, communal\_labor, land\_grants, granary\_law, seasonal\_camps                           |
+| Anarchy       | neolithic\_sharing, communal\_labor, land\_grants, oral\_law, charter\_of\_rights, militia\_levy                                                     |
+| Feudal        | feudal\_oaths, land\_grants, militia\_levy, castle\_ward, tribute, seasonal\_camps, corvee, fire\_watch                                              |
+| Monarchy      | royal\_charters, militia\_levy, tribute, civic\_projects, frugal\_rule, secret\_police, scorched\_earth, sappers\_corps                              |
+| Republic      | charter\_of\_rights, civic\_projects, guild\_charters, guild\_oaths, village\_militia, university\_charter, labour\_unions, granary\_law             |
+| Theocracy     | church\_lands, granary\_law, oral\_law, fire\_watch, communal\_labor, university\_charter, civic\_projects                                           |
+| Communism     | labour\_unions, communal\_labor, civic\_projects, militia\_levy, granary\_law, fire\_watch (`public_works` is an economy policy and is ignored here) |
+
+The policies `seasonal_hunt`, `tithes` and `tribal_muster` are not offered by any shipped government. Add them to a `policies:` list to use them.
 
 ## Roles and permissions
 
@@ -81,18 +83,18 @@ The two owner-only permissions are always held by the technical owner and are **
 
 Bundles keep role YAML short. A role lists `bundles: [..]` and the permissions are added together. Ten bundles exist.
 
-| Bundle           | Permissions                                                                                                    |
-| ---------------- | -------------------------------------------------------------------------------------------------------------- |
-| `basic_resident` | BUILD, CONTAINERS, INTERACT, CONTRIBUTE                                                                        |
-| `worker`         | basic\_resident + USE\_SHOP, PURCHASE\_BUILDINGS, PLACE\_BUILDINGS, UPGRADE\_BUILDINGS, REMOVE\_BUILDINGS      |
-| `citizen`        | worker + VIEW\_FINANCES, VOTE, SPEND\_POINTS                                                                   |
-| `officer`        | citizen + MANAGE\_BUILDINGS, ADVANCE\_AGE, INVITE, KICK, APPOINT\_OFFICIALS                                    |
-| `treasurer`      | VIEW\_FINANCES, SPEND\_POINTS, SPEND\_TREASURY, WITHDRAW\_TREASURY, CONTRIBUTE, COLLECT\_TAXES                 |
-| `diplomat`       | MANAGE\_DIPLOMACY, DECLARE\_WAR, VIEW\_FINANCES, VOTE                                                          |
-| `steward`        | MANAGE\_POLICIES, CHANGE\_SETTINGS, MANAGE\_RANKS, VIEW\_FINANCES, SPEND\_POINTS, SPEND\_TREASURY              |
-| `military`       | **New.** BUILD, CONTAINERS, INTERACT, DECLARE\_WAR, MANAGE\_DIPLOMACY, VIEW\_FINANCES, MANAGE\_BUILDINGS, VOTE |
-| `all`            | every permission except the owner-only ones                                                                    |
-| `leader`         | **New.** An alias of `all`                                                                                     |
+| Bundle           | Permissions                                                                                               |
+| ---------------- | --------------------------------------------------------------------------------------------------------- |
+| `basic_resident` | BUILD, CONTAINERS, INTERACT, CONTRIBUTE                                                                   |
+| `worker`         | basic\_resident + USE\_SHOP, PURCHASE\_BUILDINGS, PLACE\_BUILDINGS, UPGRADE\_BUILDINGS, REMOVE\_BUILDINGS |
+| `citizen`        | worker + VIEW\_FINANCES, VOTE, SPEND\_POINTS                                                              |
+| `officer`        | citizen + MANAGE\_BUILDINGS, ADVANCE\_AGE, INVITE, KICK, APPOINT\_OFFICIALS                               |
+| `treasurer`      | VIEW\_FINANCES, SPEND\_POINTS, SPEND\_TREASURY, WITHDRAW\_TREASURY, CONTRIBUTE, COLLECT\_TAXES            |
+| `diplomat`       | MANAGE\_DIPLOMACY, DECLARE\_WAR, VIEW\_FINANCES, VOTE                                                     |
+| `steward`        | MANAGE\_POLICIES, CHANGE\_SETTINGS, MANAGE\_RANKS, VIEW\_FINANCES, SPEND\_POINTS, SPEND\_TREASURY         |
+| `military`       | BUILD, CONTAINERS, INTERACT, DECLARE\_WAR, MANAGE\_DIPLOMACY, VIEW\_FINANCES, MANAGE\_BUILDINGS, VOTE     |
+| `all`            | every permission except the owner-only ones                                                               |
+| `leader`         | An alias of `all`                                                                                         |
 
 ### Role resolution
 
@@ -139,7 +141,7 @@ roles:
 modifiers: {building_cost_mult: 0.95, points_output_mult: 1.05}
 policies: [civic_projects]
 policy_slots: 2
-change_cost: {points: 9000, money: 6750}
+change_cost: {points: 1600, money: 400}
 change_cooldown_hours: 48
 ```
 

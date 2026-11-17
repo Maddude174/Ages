@@ -16,4 +16,5 @@
 * [Logistics](logistics.md)
 * [Integrations](integrations.md)
 * [Administration and Troubleshooting](administration-and-troubleshooting.md)
-* [Release Notes 0.0.47](release-notes-0.0.47.md)
+* [Release Notes 0.0.59](release-notes-0.0.59.md)
+* [Compatibility and Requirements](compatibility-and-requirements.md)

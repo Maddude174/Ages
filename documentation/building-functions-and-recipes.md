@@ -4,9 +4,9 @@ The `function:` block decides what a registered building **does** on its timer. 
 
 ```yaml
 function:
-  type: processor      # processor | spawner | tax | sell | none
+  type: processor      # processor | spawner | tax | sell | siege | none
   interval: 300        # seconds between cycles (minimum 1)
-  mode: random         # random | first | all | selected
+  mode: selected       # random | first | all | selected
   always: [{points: 1}]
   recipes: [...]
 ```
@@ -28,7 +28,7 @@ function:
 always:
   - {points: 1}          # resource points to the civilization
   - {money: 5}           # money, routed by the economy (see below)
-  - {item: FEATHER, min: 1, max: 3, chance: 0.7}   # items to the output container
+  - {item: FEATHER, min: 1, max: 3, chance: 0.7}   # items to the output storage
 ```
 
 Points go to the civilization. Money is multiplied by `money_output_mult` and `economy.income_multiplier`, then **routed**:
@@ -42,7 +42,7 @@ See [Economies](economies.md) for the full rules.
 
 ### `processor`
 
-Consumes inputs from the **input container** and puts outputs into the **output container**. See the recipe format below.
+Consumes inputs from the **input storage** and puts outputs into the **output storage**. See the recipe format below.
 
 ### `spawner`
 
@@ -81,64 +81,69 @@ function:
   max_items: 64
 ```
 
-Each cycle sells up to `max_items` items from the input container at `prices` and earns the total as money, routed like other building income. Prices cannot be negative.
+Each cycle sells up to `max_items` items from the input storage at `prices` and earns the total as money, routed like other building income. Prices cannot be negative.
+
+### `siege`
+
+The cannon's function. Each shell is a recipe that **only consumes** ammunition, so a recipe with `consume` and no `produce` is valid for this type.
+
+```yaml
+function:
+  type: siege
+  interval: 180
+  mode: selected
+  recipes:
+    - id: standard_shell
+      select_as: standard
+      name: Standard shell
+      consume:
+        - {item: GUNPOWDER, amount: 3}
+        - {item: COBBLESTONE, amount: 1}
+siege:
+  range: 32        # blocks (minimum 8)
+  height: 8        # arc height (minimum 2)
+  yield: 3.5       # explosion power (minimum 1.0)
+  cooldown_seconds: 180   # overrides function.interval when set
+```
+
+Siege only runs while diplomacy is enabled, and only fires at civilizations you are at war with. The full targeting rules are in [Diplomacy and War](diplomacy-and-war.md). Ammunition comes from the cannon's storage, and a missing shell shows as `Need ammo (see shell recipes)`.
 
 ### `none`
 
 No timer logic besides `always`. Used by cores, storage, defence and infrastructure buildings.
 
-## Recipe modes (processors)
+## Recipe modes (processors and siege)
 
-| Mode       | Behaviour each cycle                                                                        |
-| ---------- | ------------------------------------------------------------------------------------------- |
-| `random`   | Recipes are shuffled. The **first one that can run** runs.                                  |
-| `first`    | Recipes are tried in file order. The first that can run runs. Used by the progressive Mine. |
-| `all`      | **Every** recipe that can run, runs.                                                        |
-| `selected` | The recipe the owner selected in the Production panel runs first. See below.                |
+| Mode       | Behaviour each cycle                                                                                                        |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `random`   | Recipes are shuffled. The **first one that can run** runs.                                                                  |
+| `first`    | Recipes are tried in file order. The first that can run runs. Used by the progressive Mine, Clay Pit, Sand Pit and Forager. |
+| `all`      | **Every** recipe that can run, runs.                                                                                        |
+| `selected` | The product the owner chose in the Production panel runs first. See below.                                                  |
 
 A recipe is skipped if `require_level` exceeds the building's upgrade level, or `require_age` is later than the civilization's current age. Both are **minimums**, so a higher level or age still unlocks the recipe. If no recipe is unlocked the status is `No unlocked recipes`.
 
 ### `selected` mode and `select_as`
 
-In `selected` mode the owner or a manager picks an entry in the **Production** panel. By default each recipe is its own entry, keyed by its `id`.
+In `selected` mode the owner or a manager picks a **product** in the **Production** panel. Recipes that share a `select_as` key form one product, so tiers (better tools at higher levels) show up as one choice. For example every Woodcutter wood type is one product, and its wooden, stone, copper and iron axe tiers are the tiers.
 
-Since 0.0.47 several recipes can share a `select_as` key, so one menu choice stands for a whole **family**, for example the Woodcutter's tool tiers for one wood type:
+How the choice resolves each cycle:
 
-```yaml
-recipes:
-  - id: oak_wood
-    select_as: oak
-    name: Oak
-    require_level: 1
-    consume: [{item: WOODEN_AXE, durability: 4}]
-    produce: ...
-  - id: oak_stone
-    select_as: oak
-    name: Oak
-    require_level: 2
-    consume: [{item: STONE_AXE, durability: 4}]
-    produce: ...
-```
+1. The recipes of the chosen product are tried **best tier first** (highest `require_level` first, preferring the rarer tool).
+2. The first tier whose inputs are present and whose output fits runs.
+3. If the chosen product cannot run this cycle (missing tool or ingredient, or full output), any other unlocked recipe that can run is used instead.
+4. The status only reads `Needs ...` when no unlocked recipe could run.
 
-How a selection resolves:
-
-1. A recipe whose `id` equals the selection runs first.
-2. Otherwise the recipes in the `select_as` family run, **highest `require_level` first**.
-3. Otherwise the first unlocked recipe runs.
-4. If the chosen recipe cannot run this cycle (missing input or full output), any other unlocked recipe that **can** run is used instead.
-5. The status only reads `Needs ...` when no unlocked recipe could run.
-
-Locked tiers stay hidden in the panel until the level and age allow them.
+Tiers stay hidden in the panel until the level and age allow them. A recipe without `select_as` is its own product, keyed by its `id`.
 
 ## Recipe format
 
 ```yaml
 recipes:
-  - id: forage              # needed for 'selected' mode, must be unique per building
+  - id: forage              # unique per building
     select_as: berries      # optional: group tiers under one menu choice
     name: Forage
     interval: 240           # optional: the NEXT cycle after this recipe is this long
-    optional: true          # dropped silently if items don't exist on this server version
     require_level: 2
     require_age: medieval
     consume:
@@ -153,20 +158,22 @@ recipes:
         - {item: BROWN_MUSHROOM, percent: 10}
 ```
 
+The old `optional: true` flag is **no longer supported**. Every item name in a recipe must exist on your server, or the building is skipped. See [Compatibility and Requirements](compatibility-and-requirements.md).
+
 ### `consume` ingredients
 
-| Form                          | Meaning                                                                                                                                |
-| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| `{item: X, amount: N}`        | Take `N` of item `X`.                                                                                                                  |
-| `{any_of: [A, B], amount: N}` | Take `N` of any one of the listed items.                                                                                               |
-| `{group: g, amount: N}`       | Take `N` of any item in an item group from `groups.yml`.                                                                               |
-| `{item: X, durability: D}`    | A **tool**: wears down by `D` per cycle and is destroyed when broken. The item must have durability and `D` must be below its maximum. |
+| Form                          | Meaning                                                                                                                                                                                                  |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `{item: X, amount: N}`        | Take `N` of item `X`.                                                                                                                                                                                    |
+| `{any_of: [A, B], amount: N}` | Take `N` of any one of the listed items.                                                                                                                                                                 |
+| `{group: g, amount: N}`       | Take `N` of any item in an item group from `groups.yml`.                                                                                                                                                 |
+| `{item: X, durability: D}`    | A **tool**: wears down by `D` per cycle and is destroyed when broken. The item must have durability and `D` must be below its maximum. `any_of` works with `durability` too, so any listed tool will do. |
 
 An ingredient needs `amount` of at least 1 or `durability` of at least 1. If any input is missing, the recipe does not run and the building status reads `Needs ...`.
 
 ### `produce`
 
-`produce` has a `pick` mode and a list of `entries`.
+`produce` has a `pick` mode and a list of `entries`. A recipe needs at least one `produce` entry or at least one `consume` entry.
 
 | `pick` | Behaviour                                                                                                                |
 | ------ | ------------------------------------------------------------------------------------------------------------------------ |
@@ -185,26 +192,27 @@ Entry kinds:
 
 For `pick: one`, percentages must total at most 100, and the remainder is nothing. You can use `weight:` instead of `percent:` (`{item: EGG, weight: 3}`, `{item: AIR, weight: 1}`).
 
-If the recipe produces items but the output container is full, the recipe does **not** run and the building status reads `Output container is full`. Inputs are only consumed once the output is known to fit.
+If the recipe produces items but the output storage is full, the recipe does **not** run and the building status reads `Output container is full`. Inputs are only consumed once the output is known to fit.
 
 ## Worked example: the Hunter's Hut
 
-A barrel-core building (`logistics: {input: CORE, output: CORE}`) with `mode: random` and `interval: 240`.
+A building with `logistics: {input: CORE, output: CORE}`, `mode: selected` and `interval: 240`. It offers four products, and the owner picks one:
 
-| Recipe            | Consumes               | Produces (pick one)                                                        |
-| ----------------- | ---------------------- | -------------------------------------------------------------------------- |
-| Hunt with a bow   | Bow (wears 2), 1 arrow | Beef or porkchop 15% each, mutton 10%, rabbit 15%, chicken 10%, leather 5% |
-| Hunt with a sword | Stone sword (wears 3)  | Porkchop 20%, mutton 15%, rabbit 10%                                       |
-| Set snares        | 2 sticks, 1 string     | Rabbit 25%, chicken 20%                                                    |
+| Product           | Consumes                                          | Produces (pick one)                                                      |
+| ----------------- | ------------------------------------------------- | ------------------------------------------------------------------------ |
+| Hunt with a bow   | Bow (wears 2), 1 arrow                            | Beef 18%, porkchop 18%, mutton 14%, rabbit 16%, chicken 14%, leather 8%  |
+| Hunt with a sword | Any stone, copper or iron sword (wears 3)         | Porkchop 24%, mutton 20%, rabbit 14%, beef 12%, leather 8%               |
+| Hunt with a spear | Any wooden, stone, copper or iron spear (wears 3) | Beef 20%, porkchop 18%, mutton 16%, rabbit 14%, chicken 12%, leather 10% |
+| Set snares        | 2 sticks, 1 string                                | Rabbit 30%, chicken 25%, rabbit hide 12%                                 |
 
-Plus `always: {points: 0.4}` every cycle. Put a bow and arrows in the barrel, and meat appears in the same barrel.
+Plus `always: {points: 1.4}` every cycle. Open the building's storage, put a bow and arrows in it, and meat appears in the same storage. The sword and spear recipes need copper or spears from newer Minecraft versions in their `any_of` lists. See [Compatibility and Requirements](compatibility-and-requirements.md).
 
-## Worked example: the Marketplace
+## Worked example: progressive tiers (Woodcutter)
 
-A `processor` whose recipes consume food and `produce` `{money: N}` with `pick: all`, turning goods into money. That money is multiplied by your economy modifiers and then split between the treasury and the building. Under Barter (`money_enabled: false`) it converts to RP.
+Each wood type is one product (`select_as: oak`, `birch`, and so on). The wooden-axe tier works at level 1 and produces 2 to 4 logs, a 30% chance of a sapling and a 40% chance of sticks. Upgrades unlock the stone, copper and iron axe tiers for the same wood type, and the building uses the best axe you put in. The Mine, Clay Pit, Sand Pit and the farming and industry buildings follow the same pattern.
 
 ## Tips
 
 * Keep `interval` realistic. Production runs once per second in a scheduler, but lots of very short intervals add load.
-* Use `optional: true` for recipes that need items missing on older Minecraft versions (copper tools before 1.21.9, for example).
-* Make output containers large enough, or you will see `Output container is full` and production stops.
+* Make output storage large enough, or you will see `Output container is full` and production stops.
+* Test a new building with `/ages give <building>` and an admin account before offering it in the catalogue.
