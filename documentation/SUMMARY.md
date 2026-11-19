@@ -18,3 +18,8 @@
 * [Administration and Troubleshooting](administration-and-troubleshooting.md)
 * [Release Notes 0.0.59](release-notes-0.0.59.md)
 * [Compatibility and Requirements](compatibility-and-requirements.md)
+* [YAML Guide](yaml-guide.md)
+* [YAML Guide: Buildings](yaml-guide-buildings.md)
+* [YAML Guide: Governments](yaml-guide-governments.md)
+* [YAML Guide: Economies](yaml-guide-economies.md)
+* [YAML Guide: Policies](yaml-guide-policies.md)
