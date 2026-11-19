@@ -93,15 +93,21 @@ Put the ammunition into the cannon's storage (**Open storage** in its menu). The
 
 ### Range, damage and cooldown
 
-The `siege:` block sets the base values, and `function.interval` (or `siege.cooldown_seconds`) sets the reload time:
+The building-level `siege:` block sets the **base** values: `range: 32`, `height: 8`, `yield: 3.5`. The reload time is `cooldown_seconds` (180), and each upgrade's `function.interval` replaces it. A `siege:` block written **inside an upgrade is ignored**, so upgrades change range, height and yield only through a level bonus that the plugin adds:
 
-| Level                                             | Reload | `range` | `height` | `yield` |
-| ------------------------------------------------- | ------ | ------- | -------- | ------- |
-| I (base)                                          | 180 s  | 32      | 8        | 3.5     |
-| II (Medieval upgrade, 3,350 RP + 5,000 money)     | 150 s  | 48      | 12       | 4.0     |
-| III (Industrial upgrade, 6,450 RP + 15,000 money) | 120 s  | 64      | 16       | 5.0     |
+* **Range:** base + 16 blocks for each level above I.
+* **Arc height:** base + 4 blocks for each level above I.
+* **Yield:** base + 0.5 for each level (level I already gets +0.5).
 
-On top of those values the plugin adds a level bonus: **+16 blocks of range and +4 of arc height for each level above I, and +0.5 yield per level**. The minimums are range 8, height 2 and yield 1.0. Shell damage is never below 2.5. Treat the numbers above as a starting point and test them on your own server.
+With the shipped values that works out to:
+
+| Level                                             | Reload | Range | Arc height | Yield |
+| ------------------------------------------------- | ------ | ----- | ---------- | ----- |
+| I (base)                                          | 180 s  | 32    | 8          | 4.0   |
+| II (Medieval upgrade, 3,350 RP + 5,000 money)     | 150 s  | 48    | 12         | 4.5   |
+| III (Industrial upgrade, 6,450 RP + 15,000 money) | 120 s  | 64    | 16         | 5.0   |
+
+The minimums are range 8, height 2, yield 1.0 and a reload of 10 seconds. Shell damage is never below 2.5. To make cannons stronger or weaker, change the top-level `siege:` values, the upgrade `function.interval` lines or the shell recipes. Test any change on your own server.
 
 ### What shells destroy
 

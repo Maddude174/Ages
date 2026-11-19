@@ -2,7 +2,7 @@
 
 Buildings are the heart of Ages. A building is a **core block** surrounded by a **structure** that satisfies a list of block requirements. Once registered it can produce, tax, trade, house villagers, extend your claim, fire siege shells or provide passive bonuses.
 
-There are **64 shipped buildings** in eight categories. See the [Building Catalogue](building-catalogue.md). Production recipes are explained in [Building Functions and Recipes](building-functions-and-recipes.md).
+There are **64 shipped buildings** in eight categories. See the [Building Catalogue](building-catalogue.md). Production recipes are explained in [Building Functions and Recipes](building-functions-and-recipes.md). To write your own, see the [YAML Guide](/broken/pages/yaml-guide).
 
 ## Lifecycle
 
@@ -150,7 +150,7 @@ Upgrades are **cumulative** on top of the previous level:
 * `requirements`: the same group is raised to the new minimum, new groups are added.
 * `function` overrides `interval`, `cap`, `max_items`, `per_resident`, `max_stored` and `prices`. `recipes` and `always` are **added** to the previous ones.
 * `provides` values are **added**.
-* A cannon's `siege:` block is replaced per level.
+* A `siege:` block inside an upgrade is **ignored**. A cannon's range, height and yield come from the top-level `siege:` block plus a level bonus added by the plugin. See [Diplomacy and War](diplomacy-and-war.md).
 * Recipes can be gated with `require_level` (the building's upgrade level) and `require_age`. Both are **minimums**: a higher level or age still runs the recipe.
 
 ## Building file reference
@@ -199,4 +199,4 @@ Copy `buildings/_example.yml` as a starting point. A definition with an error is
 
 ## Siege (cannons)
 
-The Cannon uses `function: {type: siege}` with shell recipes and a `siege:` block (`range`, `height`, `yield`, `cooldown_seconds`). See [Diplomacy and War](diplomacy-and-war.md) and [Building Functions and Recipes](building-functions-and-recipes.md).
+The Cannon uses `function: {type: siege}` with shell recipes and a top-level `siege:` block (`range`, `height`, `yield`, `cooldown_seconds`). See [Diplomacy and War](diplomacy-and-war.md) and [Building Functions and Recipes](building-functions-and-recipes.md).
